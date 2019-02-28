@@ -8,13 +8,14 @@ export class AuthService {
   private _idToken: string;
   private _accessToken: string;
   private _expiresAt: number;
+  public userProfile: any;
 
   auth0 = new auth0.WebAuth({
     clientID: '3h0CSAopFAhkbnvvwy8UydmxM2nw5xjE',
     domain: 'angular-auth-sample.eu.auth0.com',
     responseType: 'token id_token',
     redirectUri: 'http://localhost:4200/callback',
-    scope: 'openid'
+    scope: 'openid profile'
   });
 
   constructor(public router: Router) {
@@ -84,6 +85,19 @@ export class AuthService {
     // Check whether the current time is past the
     // access token's expiry time
     return new Date().getTime() < this._expiresAt;
+  }
+
+  public getProfile(cb): void {
+    if (!this._accessToken) {
+      throw new Error('Access Token must exist to fetch profile');
+    }
+    const self = this;
+    this.auth0.client.userInfo(this._accessToken, (err, profile) => {
+      if (profile) {
+        self.userProfile = profile;
+      }
+      cb(err, profile);
+    });
   }
 
 }
